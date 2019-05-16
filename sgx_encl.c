@@ -471,8 +471,24 @@ static int sgx_init_page(struct sgx_encl *encl, struct sgx_encl_page *entry,
 			return -EFAULT;
 		}
 
+		///epc page access by kernel.ysh
+		printk(KERN_INFO "before epa testig epc access by kernel-ysh\n");
+		printk(KERN_INFO "VADDR:0x%llx-ysh\n",(unsigned long long)vaddr);
+		int i;
+		for(i = 0; i < 1; i++)
+		printk(KERN_INFO " %d by yeo14 %lld  -ysh\n",i,*(unsigned long long *)(vaddr));
+		/////////////
+
+
 		ret = __epa(vaddr);
+		
 		sgx_put_page(vaddr);
+
+		/////////////////////
+		*(unsigned long long*)vaddr=0x0123456789abcdef;
+		flush_kernel_vmap_range(vaddr,8);
+		printk(KERN_INFO "BY YSH :0x%llx -ysh \n",*(unsigned long long*)(vaddr));
+		//////////////////
 
 		if (ret) {
 			sgx_warn(encl, "EPA returned %d\n", ret);
@@ -489,6 +505,18 @@ static int sgx_init_page(struct sgx_encl *encl, struct sgx_encl_page *entry,
 		mutex_lock(&encl->lock);
 		list_add(&va_page->list, &encl->va_pages);
 		mutex_unlock(&encl->lock);
+
+		////////////////////////
+		*(unsigned long long*)vaddr=0x0123456789abcdef;
+		for(i=0; i< 1024;i++)
+		flush_kernel_vmap_range(vaddr,8);
+		printk(KERN_INFO "BY YSH :0x%llx -ysh \n",*(unsigned long long*)(vaddr));
+		/////////////
+
+		*(unsigned long long*)vaddr=0xfedcba9876543210;
+		flush_kernel_vmap_range(vaddr,8);
+		printk(KERN_INFO "BY YSH :0x%llx -ysh \n",*(unsigned long long*)(vaddr));
+
 	}
 
 	entry->va_page = va_page;
